@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<project name="Common" basedir="../.." default="common-help">
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+		    <pathelement location="tools/ant/ext/ant-contrib-1.0b3.jar"/>
+		</classpath>
+	</taskdef>
+<!--
+	<taskdef name="xml-dir-listing"
+	        classname="net.matthaynes.xml.dirlist.AntFileListing"
+	        classpath="tools/ant/ext/xml-dir-listing.0.2.1.jar"/>
+
+    <target name="common-help" description="Defines the "/>
+-->
+</project>

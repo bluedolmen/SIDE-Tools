@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<project name="SIDE-Application-Deployer" basedir="." default="all">
+
+	<description>SIDE-Labs, a sustainable IDE for a changing world</description>
+
+	<property environment="env" />
+	<condition property="IZPACK_HOME" value="${env.IZPACK_HOME}" else="../..">
+		<isset property="env.IZPACK_HOME" />
+	</condition>
+
+	<!-- import default properties from file -->
+	<property file="build.properties" />
+	<property file="../../deployer.side.properties" />
+
+	<!-- set proxy if needed, use properties in build.properties  -->
+	<setproxy nonproxyhosts="${proxy.nonproxyhosts}" proxyhost="${proxy.host}"
+		proxyport="${proxy.port}" proxypassword="${proxy.password}" proxyuser="${proxy.user}"
+		socksproxyhost="${proxy.socks.host}" socksproxyport="${proxy.socks.port}" />
+
+	<!-- Core build scripts -->
+	<import file="src/build/common.xml" />
+	<import file="src/build/deployer-workflow.xml" />
+
+	<target name="help" description="targets">
+		<echo message="Type 'ant -p' to have all the available targets."/>
+	</target>
+
+</project>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	In a few words, nothing is copied into Alfresco, neither tomcat/shared,
+	nor webapps/alfresco, nor webapps/share, ...
+
+	This script reorganizes the generated files and creates the configuration
+	so they can be used directly by alfresco from this place without the need
+	to copy them into Alfresco or Share.
+
+	It is to be sure to have a clean install each time SIDE models are
+	generated
+
+-->
+
+<!-- $Id$ -->
+
+<project name="Workflow Deployer" basedir="../.." default="deploy-workflow">
+
+	<!-- import common targets -->
+	<import file="../../build.xml"/>
+
+	<tstamp prefix="start.da">
+	    <format property="TS" pattern="yyyyMMdd-HHmmss.SSS"/>
+	</tstamp>
+	<property name="start.da" value="build-${start.TS}"/>
+
+    <!-- setup properties -->
+    <property file="${basedir}/build.properties" />
+    <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
+
+	<property name="p.package" value="${workflow.action.package}"/>
+	<property name="p.class" value="${workflow.action.class}"/>
+
+	<!-- Use PDN for the class name-->
+	<property name="p.replaceActions" value="${replaceActions}"/>
+
+	<!-- Use PDN for the class name-->
+	<property name="p.usePDN" value="${useProcessDefinitionName}"/>
+
+	<!-- Copies the script element if true -->
+	<property name="p.copyScript" value="${copyScript}" />
+
+	<!-- Generates the java statement to get the script on a server-->
+	<property name="p.dynamic" value="${dynamic}"/>
+
+	<!-- The url where the generated scripts are stored-->
+	<property name="p.dynamicUrl" value="${dynamicUrl}" />
+
+	<!-- Alfresco clean targets -->
+	<target name="improve-workflows">
+    	<for param="file">
+    		<path>
+                <fileset dir="${side.application.dist.side.alfresco.tmp.dir}">
+                    <include name="**/processdefinition.xml"/>
+                </fileset>
+    	  	</path>
+			<sequential>
+		    	<propertyregex override="yes"
+					property="p.class" input="@{file}"
+					regexp="SIDE_WorkflowExtension_([^\/]*)/bpm/.*" select="\1"/>
+				<antcall target="add-action">
+					<param name="p.file" value="@{file}"/>
+				</antcall>
+				<antcall target="generate-woso">
+					<param name="p.file" value="@{file}"/>
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+
+	<!--
+		@param file absolute file name of the process definition to use
+			   as an input
+	-->
+    <target name="generate-woso">
+    	<property name="p.project" value="workflow-requisition"/>
+    	<property name="p.javaSrcDir" value="${side.application.src.mavenProjects.dir}/${p.project}/src/main/java"/>
+    	<!--property name="p.javaSrcDir" value="${side.application.src.java.dir}"/-->
+    	<!--property name="p.file" value="${workflow.process.definition}"/-->
+    	<!--property name="p.file" value="${resources.dir}/empty.xml"/-->
+<!--
+    	<property name="p.package" value="${workflow.action.package}"/>
+    	<property name="p.class" value="${workflow.action.class}"/>
+-->
+    	<propertyregex override="yes"
+			property="p.packageDirName" input="${p.package}"
+			regexp="(\.)" replace="/"/>
+
+    	<xslt in="${p.file}"
+			  style="${xsl.dir}/workflow-generate-woso-java.xsl"
+			  out="${p.javaSrcDir}/${p.packageDirName}/${p.class}.java"
+			  classpath="tools/ant/ext/saxon9.jar">
+			<param name="package" expression="${p.package}"/>
+			<param name="class" expression="${p.class}"/>
+			<param name="dynamic" expression="${p.dynamic}"/>
+			<param name="dynamic-url" expression="${p.dynamicUrl}"/>
+		</xslt>
+	</target>
+
+    <target name="add-action"
+    		description="Add actions on all transitions. These actinos may be real
+    		or not according business requirements. Its main advantage is to avoid
+    		alfresco server restart by using Java debug mode.">
+<!--
+    	<property name="p.package" value="${workflow.action.package}"/>
+    	<property name="p.class" value="${workflow.action.class}"/>
+-->
+    	<xslt in="${p.file}"
+			  style="${xsl.dir}/workflow-add-actions.xsl"
+			  out="${p.file}.new"
+			  classpath="tools/ant/ext/saxon9.jar">
+			<param name="package" expression="${p.package}"/>
+			<param name="class" expression="${p.class}"/>
+			<param name="use-PDN" expression="${p.usePDN}"/>
+			<param name="replace-actions" expression="${p.replaceActions}"/>
+			<param name="copy-script" expression="${p.copyScript}"/>
+    	</xslt>
+    	<move file="${p.file}" tofile="${p.file}.bak"/>
+    	<move file="${p.file}.new" tofile="${p.file}"/>
+	</target>
+
+    <target name="help" description="Contains all the deployer targets related"/>
+
+	<!-- Main target -->
+	<target name="dwc"
+    		depends="deploy-workflow-configuration">
+    </target>
+
+	<target name="deploy-workflow-configuration"
+			description="Deploys the workflow configuration"
+    		depends="add-action">
+    </target>
+
+</project>

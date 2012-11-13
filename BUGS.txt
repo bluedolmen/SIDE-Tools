@@ -1,0 +1,20 @@
+To complete the installation, you need:
+* to fix resource bundle problem, in module-context.xml file, by commenting
+the corresponding line like the following:
+
+        <property name="labels">
+            <list>
+                <value>side-labs/SIDE-Run-Alfresco/server/model34d-1.0.3/config/alfresco/module/SIDE_model34d/model/messages</value>
+            </list>
+        </property>
+
+becomes:
+
+<!--<property name="labels">
+            <list>
+                <value>side-labs/SIDE-Run-Alfresco/server/model34d-1.0.3/config/alfresco/module/SIDE_model34d/model/messages</value>
+            </list>
+        </property>-->
+
+* to fix another resource bundle problem by moving the corresponding message file into
+alfresco/messages directory which resides in tomcat/shared/classes
